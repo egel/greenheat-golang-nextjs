@@ -1,17 +1,11 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"github.com/egel/greenheat-golang-nextjs/v2/internal/application"
 )
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run()
+	appOptions := application.NewAppOptions()
+	app := application.Initialize(appOptions)
+	app.Start()
 }
