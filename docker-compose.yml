@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  greenheat.server:
+    container_name: server
+    ## for local build
+    build:
+      context: ./server
+      dockerfile: Dockerfile-server
+    ## for production instead of "build:" use "image:" only (before must upload image)
+    # image: registry.example.com/greenheat/server:${RELEASE_VERSION}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      greenheat:
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT}
+      - SERVER_PROTOCOL=${SERVER_PROTOCOL}
+      - SERVER_HOST=${SERVER_HOST}
+      - SERVER_PORT=${SERVER_PORT}
+      - SERVER_NAME=${SERVER_NAME}
+      - SERVER_API_PREFIX=${SERVER_API_PREFIX}
+networks:
+  greenheat:
+    name: greenheat_network
