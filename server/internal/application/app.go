@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	v1 "github.com/egel/greenheat-golang-nextjs/v2/internal/controller/http/v1"
+	"github.com/rs/zerolog/log"
 )
 
 // AppOptions define optional configurations for the app
@@ -33,12 +34,13 @@ func newApp(handler http.Handler, serverAddress string, options *AppOptions) *Ap
 
 func Initialize(
 	appOptions *AppOptions,
+	serverAddress string,
 ) *App {
 	httpHandler := v1.NewHttpHandler()
-	return newApp(httpHandler, "localhost:9000", appOptions) // TODO: move to env vars
+	return newApp(httpHandler, serverAddress, appOptions) // TODO: move to env vars
 }
 
 func (app *App) Start() {
 	app.Server.ListenAndServe()
-	// log.Info().Msg("Server exiting")
+	log.Info().Msg("Server exiting")
 }
