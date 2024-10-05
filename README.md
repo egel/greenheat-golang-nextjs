@@ -16,10 +16,18 @@
 
 Requirements:
 
-- docker
-- docker-compose
-- golang <= 1.23
-- node <= 20
+-   docker
+-   docker-compose
+-   golang <= 1.23.2
+-   node <= 20
+
+```bash
+# copy .env.example to .env (adjust to the needs)
+cp .env.example .env
+
+# start detached
+docker compose up -d
+```
 
 ## Development
 
