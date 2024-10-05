@@ -6,25 +6,27 @@ import (
 
 	"github.com/egel/greenheat-golang-nextjs/v2/internal/infrastructure/openmeteo"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func forecastGetOpenMeteoHandler(ctx *gin.Context) {
-	// FIXME: just to test for now
-	lat := 52.52437
-	lng := 13.41053
-
-	body, err := openmeteo.ForecastGet(ctx, lat, lng)
+	body, err := openmeteo.ForecastGet(ctx)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err) // TODO: wrap with own error message
+		errMsg := "ForecastGet failed"
+		log.Error().Err(err).Msg(errMsg)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, errMsg) // TODO: wrap with own error message
 		return
 	}
 
 	// unmarshal
-	var msg string
+	var msg any
 	if err := json.Unmarshal(body, &msg); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err) // TODO: wrap with own error message
+		errMsg := "Unmarshal failed"
+		log.Error().Err(err).Msg(errMsg)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, errMsg) // TODO: wrap with own error message
 		return
 	}
 
-	ctx.JSON(http.StatusOK, body)
+	log.Info().Any("message", msg).Msg("successfully get forecast")
+	ctx.JSON(http.StatusOK, msg)
 }
