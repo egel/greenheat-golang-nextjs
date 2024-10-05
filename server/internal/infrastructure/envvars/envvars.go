@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/egel/greenheat-golang-nextjs/v2/internal/constans"
 	"github.com/egel/greenheat-golang-nextjs/v2/internal/constans/errors"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
@@ -83,7 +84,7 @@ func loadEnvironmentVariablesFromDotEnvFile(configFilePath string) error {
 		Msg("preview initial args for loadEnvironmentVariablesFromDotEnvFile")
 
 	if len(configFilePath) == 0 {
-		configFilePath = ".env"
+		configFilePath = constans.Envvars_filename
 	}
 
 	err := godotenv.Load(configFilePath)
