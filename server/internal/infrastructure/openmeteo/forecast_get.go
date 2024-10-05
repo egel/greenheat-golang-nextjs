@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/egel/greenheat-golang-nextjs/v2/internal/constans/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 )
@@ -19,8 +20,7 @@ func ForecastGet(ctx *gin.Context) (body []byte, err error) {
 		nil,
 	)
 	if err != nil {
-		msg := "creating newRequestWithContext failed" // TODO: extract to errors
-		return nil, fmt.Errorf(msg)
+		return nil, fmt.Errorf(errors.ErrHttp_NewRequestWithContext)
 	}
 
 	// Decision:
@@ -49,22 +49,18 @@ func ForecastGet(ctx *gin.Context) (body []byte, err error) {
 		Host:   "api.open-meteo.com", // TODO: can be moved to env vars
 		Opaque: opaque,
 	}
-	log.Debug().
-		Any("URL", openMeteoUrl).
-		Msg("preview")
+	log.Debug().Any("URL", openMeteoUrl).Msg("preview")
 	req.URL = openMeteoUrl
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		errMsg := "openmeteo forecast get method failed"
-		return nil, fmt.Errorf(errMsg)
+		return nil, fmt.Errorf(errors.ErrExternal_request_openmeteo_forecast)
 	}
 	defer resp.Body.Close()
 
 	body, err = io.ReadAll(resp.Body)
 	if err != nil {
-		errMsg := "io readall failed"
-		return nil, fmt.Errorf(errMsg)
+		return nil, fmt.Errorf(errors.ErrIO_ReadAll)
 	}
 
 	return body, nil
