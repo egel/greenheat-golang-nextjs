@@ -1,0 +1,42 @@
+# the image version should be synchronized with building pipelines
+FROM golang:1.23.2-alpine3.20 AS builder
+
+ENV GIN_MODE=release
+
+RUN apk update \
+  && apk add --no-cache \
+  alpine-sdk=1.0-r1 \
+  git=2.45.2-r0 \
+  && rm -rf /var/cache/apk/*
+
+RUN mkdir -p /api
+WORKDIR /api
+
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+COPY . .
+RUN go build -o bin/server/server cmd/server/main.go
+
+# --------------------------------------
+# build final image
+# --------------------------------------
+FROM alpine:3.20
+
+LABEL maintainer="John Doe <johndoe@example.com>"
+
+ENV GIN_MODE=release
+
+RUN apk update \
+  && apk add --no-cache \
+  ca-certificates=20240705-r0 \
+  && rm -rf /var/cache/apk/*
+
+RUN mkdir -p /api
+WORKDIR /api
+COPY --from=builder /api/bin/server .
+
+ENTRYPOINT ["./server"]
+
+# vi: ft=dockerfile
