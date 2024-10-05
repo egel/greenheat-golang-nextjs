@@ -1,0 +1,16 @@
+# peroject's files and dirs
+uncommited/
+
+# Ignore vim files:
+*~
+*.swp
+*.swo
+
+
+# local environment variables (docker compose / server)
+.env
+.env.test
+
+# system
+.DS_Store
+
