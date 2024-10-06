@@ -26,6 +26,7 @@ var (
 // Config holds current environment variables configuration
 var Config *envvars
 
+// envvars define structure of available environment variables
 type envvars struct {
 	Environment string
 
@@ -37,6 +38,7 @@ type envvars struct {
 	ServerApiPrefix string
 }
 
+// osVariable define the OS variable and its accessibility
 type osVariable struct {
 	name      string
 	publicity string
