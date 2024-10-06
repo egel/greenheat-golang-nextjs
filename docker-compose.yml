@@ -20,6 +20,19 @@ services:
       - SERVER_PORT=${SERVER_PORT}
       - SERVER_NAME=${SERVER_NAME}
       - SERVER_API_PREFIX=${SERVER_API_PREFIX}
+  greenheat.webapp:
+    container_name: webapp
+    ## for local build
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile-webapp
+    ## for production instead of "build:" use "image:" only (before must upload image)
+    # image: registry.example.com/greenheat/webapp:${RELEASE_VERSION}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      greenheat:
 networks:
   greenheat:
     name: greenheat_network

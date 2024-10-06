@@ -1,0 +1,54 @@
+# reference package list: https://pkgs.alpinelinux.org/packages
+FROM node:20-alpine3.20 AS builder
+
+RUN apk update \
+  && apk --no-cache --virtual build-dependencies add \
+  jpeg="9e-r1" \
+  cairo="1.18.0-r0" \
+  giflib="5.2.2-r0" \
+  pango="1.52.2-r0" \
+  python3="3.12.6-r0" \
+  make="4.4.1-r2" \
+  g++="13.2.1_git20240309-r0"
+
+# Set the working directory
+WORKDIR /app
+
+# Copy just packages & install all the dependencies
+COPY package.json .
+COPY package-lock.json .
+RUN npm ci
+
+# Copy rest of the content to the container
+COPY . /app
+
+# Generate the build of the application
+RUN npm run build
+
+# -----------------------------------------------------
+# Production image, copy all the files and run next
+# -----------------------------------------------------
+FROM node:20-alpine3.20 AS runner
+
+LABEL maintainer="John Doe <johndoe@example.com>"
+
+WORKDIR /app
+
+RUN addgroup -g 1001 -S nodejs \
+  && adduser -S nextjs -u 1001
+
+# Copy the build output to replace the default nginx contents.
+# COPY --from=build /app/next.config.js ./
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+USER nextjs
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]
+
+# vi: ft=dockerfile
+
