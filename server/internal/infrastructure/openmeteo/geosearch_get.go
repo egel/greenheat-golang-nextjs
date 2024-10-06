@@ -12,7 +12,7 @@ import (
 )
 
 // ForecastGet make request to open meteo and fetch data
-func ForecastGet(ctx *gin.Context) (body []byte, err error) {
+func GeosearchGet(ctx *gin.Context) (body []byte, err error) {
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
@@ -30,7 +30,7 @@ func ForecastGet(ctx *gin.Context) (body []byte, err error) {
 	rawQueryParam := ctx.Request.URL.RawQuery
 	log.Debug().Any("rawQueryParam", rawQueryParam).Send()
 
-	urlPrefix := "/v1/forecast"
+	urlPrefix := "/v1/search"
 	var opaque string
 	// when query not empty treat it that way else send empty
 	if len(rawQueryParam) > 0 {
@@ -45,8 +45,8 @@ func ForecastGet(ctx *gin.Context) (body []byte, err error) {
 	log.Debug().Any("opaque", opaque).Send()
 
 	openMeteoUrl := &url.URL{
-		Scheme: "https",              // TODO: can me moved later to env vars
-		Host:   "api.open-meteo.com", // TODO: can be moved to env vars
+		Scheme: "https",                        // TODO: can me moved later to env vars
+		Host:   "geocoding-api.open-meteo.com", // TODO: can be moved to env vars
 		Opaque: opaque,
 	}
 	log.Debug().Any("URL", openMeteoUrl).Send()

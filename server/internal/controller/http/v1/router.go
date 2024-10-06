@@ -20,8 +20,8 @@ func NewHttpHandler() http.Handler {
 		/* =====================================================================
 		Publicly available for not logged users
 		*/
-		v1.GET("/openmeteo/forecast", forecastGetOpenMeteoHandler)
-		v1.GET("/openmeteo/geosearch", nil)
+		v1.GET("/openmeteo/forecast", forecastGetOpenmeteoHandler)
+		v1.GET("/openmeteo/geosearch", geosearchGetOpenmeteoHandler)
 	}
 
 	return r
