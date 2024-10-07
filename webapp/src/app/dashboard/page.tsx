@@ -59,6 +59,7 @@ export default function Dashboard() {
   const displayFullSearchTownName = (item: Optional<GeoSearchItem>) => {
     if (!item) return "";
     let name = "";
+    if (item.name) name += `${item.name}, `;
     if (item.admin1) name += `${item.admin1}, `;
     if (item.admin2) name += `${item.admin2}, `;
     if (item.admin3) name += `${item.admin3}, `;
@@ -74,7 +75,7 @@ export default function Dashboard() {
     const result = list.map((item) => {
       return (
         <a
-          className="block px-4 py-2 text-sm text-gray-700 min-w-full"
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-300 min-w-full cursor-pointer"
           role="menuitem"
           tabIndex={-1}
           id={`geosearch-${item.id}`}
@@ -147,7 +148,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden flex flex-col h-full">
       <nav className="px-4 pb-5 pt-7 border-gray-200 dark:bg-indigo-800 dark:border-indigo-700">
         <div className="mx-auto flex items-center justify-between px-2 sm:px-4 lg:max-w-7xl">
           <div className="flex items-center justify-start">
@@ -158,7 +159,7 @@ export default function Dashboard() {
           </div>
         </div>
       </nav>
-      <main className="px-4 mt-4">
+      <main className="px-4 mt-4 flex-1">
         <div className="relative mx-auto lg:max-w-7xl">
           <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
             <div className="relative mb-4">
@@ -183,7 +184,7 @@ export default function Dashboard() {
               geosearchData.length > 0 &&
               (searchTownInputFocused || isListHovered) ? (
                 <div
-                  className="absolute left-0 z-10 mt-2 w-65 max-w-96 max-h-64 min-h-32 overscroll-y-auto origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  className="absolute left-0 z-10 mt-2 flex overflow-y-auto origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                   role="menu"
                   aria-orientation="vertical"
                   aria-labelledby="menu-button"
@@ -191,7 +192,10 @@ export default function Dashboard() {
                   onMouseEnter={() => setIsListHovered(true)}
                   onMouseLeave={() => setIsListHovered(false)}
                 >
-                  <div className="py-1" role="none">
+                  <div
+                    className="my-2 w-65 flex flex-col max-w-96 max-h-64 min-h-32"
+                    role="none"
+                  >
                     {searchTownListRender(geosearchData)}
                   </div>
                 </div>
