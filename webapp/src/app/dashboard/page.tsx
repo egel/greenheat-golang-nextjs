@@ -11,7 +11,7 @@ import {
   switchMap,
 } from "rxjs";
 import Link from "next/link";
-import { Optional } from "@/lib/interfaces/standard";
+import { Optional, Nullable } from "@/lib/interfaces/standard";
 import { ApiService } from "@/lib/api/api-service";
 import { APP_ROUTES } from "@/constans/appRouter";
 import {
@@ -19,6 +19,8 @@ import {
   ForecastGetResponse,
   GeoSearchItem,
 } from "@/lib/api/openmeteo-dtos";
+import { Chart, registerables } from "chart.js";
+Chart.register(...registerables);
 
 export default function Dashboard() {
   const apiService = useMemo(() => new ApiService(), []);
@@ -27,6 +29,76 @@ export default function Dashboard() {
   const [searchTownInputFocused, setSearchTownInputFocused] = useState(false);
   const onFocus = () => setSearchTownInputFocused(true);
   const onBlur = () => setSearchTownInputFocused(false);
+
+  const canvasDailyGraphRef = useRef<HTMLCanvasElement>(null);
+  const chartDailyRef = useRef<Nullable<Chart>>();
+
+  const destroyChart = () => {
+    if (chartDailyRef.current) {
+      chartDailyRef.current.destroy();
+      chartDailyRef.current = null;
+    }
+  };
+
+  const fallbackContent = "Default fallback content";
+  const [chartDailyData, setChartDailyData] = useState({
+    labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+    datasets: [
+      {
+        label: "# of Votes",
+        data: [12, 19, 3, 5, 2, 3],
+        borderWidth: 1,
+      },
+    ],
+  });
+  const [chartDailyOptions, setChartDailyOptions] = useState({
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
+  });
+
+  const renderChart = () => {
+    if (!canvasDailyGraphRef.current) return;
+
+    chartDailyRef.current = new Chart(canvasDailyGraphRef.current, {
+      type: "line",
+      data: {
+        labels: [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+        ],
+        datasets: [
+          {
+            label: "Try hiding me",
+            data: [65, 59, 80, 81, 26, 55, 40],
+            fill: false,
+            borderColor: "rgb(75, 192, 192)",
+          },
+        ],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+    console.log("rendered");
+  };
+
+  useEffect(() => {
+    renderChart();
+
+    return () => destroyChart();
+  });
 
   const [isListHovered, setIsListHovered] = useState(false);
 
@@ -89,6 +161,7 @@ export default function Dashboard() {
     return result.length ? result : <p>No entries found</p>;
   };
 
+  // find desired geolocation
   useEffect(() => {
     if (searchTown.length === 0) return;
     setIsLoading(true);
@@ -101,6 +174,8 @@ export default function Dashboard() {
         next: (res: any) => {
           setIsLoading(false);
           setGeosearchData(res.results);
+          setSearchTownInputFocused(true);
+          console.log(res.results);
         },
         error: (err) => {
           console.error(err);
@@ -112,6 +187,7 @@ export default function Dashboard() {
     };
   }, [searchTown]);
 
+  // get forecast information
   useEffect(() => {
     if (!searchTownSelected) return;
     const params: ForecastGetQueryParams = {
@@ -138,14 +214,6 @@ export default function Dashboard() {
       if (subscription) subscription.unsubscribe();
     };
   }, [searchTownSelected]);
-
-  const params = {
-    latitude: [52.54],
-    longitude: [13.41],
-    current: "temperature_2m,weather_code,wind_speed_10m,wind_direction_10m",
-    hourly: "temperature_2m,precipitation",
-    daily: "weather_code,temperature_2m_max,temperature_2m_min",
-  };
 
   return (
     <div className="overflow-hidden flex flex-col h-full">
@@ -262,9 +330,16 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 my-4 xl:grid-cols-2 xl:gap-4">
                 <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800 xl:mb-0">
                   <h2 className="text-xl">Daily</h2>
+                  <canvas
+                    ref={canvasDailyGraphRef}
+                    role="img"
+                    height={300}
+                    width={500}
+                  ></canvas>
                 </div>
                 <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                   <h2 className="text-xl">Hourly</h2>
+                  <canvas id="hourly-graph"></canvas>
                 </div>
               </div>
             </>
