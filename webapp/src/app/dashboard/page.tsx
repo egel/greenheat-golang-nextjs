@@ -205,57 +205,69 @@ export default function Dashboard() {
             </div>
           </form>
           {!isLoading && searchTownSelected ? (
-            <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
-              <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                <h2 className="text-xl">Geo Search details</h2>
-                <div className="flex justify-between gap-4 mt-4">
-                  <div className="font-bold">Name</div>
-                  <div>{displayFullSearchTownName(searchTownSelected)}</div>
-                </div>
-                <div className="flex justify-between gap-4 mt-4">
-                  <div className="font-bold">Coordinates</div>
-                  <div>
-                    {searchTownSelected?.latitude} °N,{" "}
-                    {searchTownSelected?.longitude} °E
+            <>
+              <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
+                <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                  <h2 className="text-xl">Geo Search details</h2>
+                  <div className="flex justify-between gap-4 mt-4">
+                    <div className="font-bold">Name</div>
+                    <div>{displayFullSearchTownName(searchTownSelected)}</div>
                   </div>
+                  <div className="flex justify-between gap-4 mt-4">
+                    <div className="font-bold">Coordinates</div>
+                    <div>
+                      {searchTownSelected?.latitude} °N,{" "}
+                      {searchTownSelected?.longitude} °E
+                    </div>
+                  </div>
+                  <div className="flex justify-between gap-4 mt-4">
+                    <div className="font-bold">Population</div>
+                    <div>{displayPopulation(searchTownSelected)}</div>
+                  </div>
+                  <div className="flex justify-between gap-4 mt-4">
+                    <div className="font-bold">Time Zone</div>
+                    <div>{searchTownSelected?.timezone}</div>
+                  </div>
+                  {/* <div>{JSON.stringify(searchTownSelected)}</div>*/}
                 </div>
-                <div className="flex justify-between gap-4 mt-4">
-                  <div className="font-bold">Population</div>
-                  <div>{displayPopulation(searchTownSelected)}</div>
-                </div>
-                <div className="flex justify-between gap-4 mt-4">
-                  <div className="font-bold">Time Zone</div>
-                  <div>{searchTownSelected?.timezone}</div>
-                </div>
-                {/* <div>{JSON.stringify(searchTownSelected)}</div>*/}
-              </div>
-              <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-                <h2 className="text-xl">Current</h2>
+                <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                  <h2 className="text-xl">Current</h2>
 
-                <div className="flex justify-between gap-4 mt-4">
-                  <div className="font-bold">Is Day</div>
-                  <div>{forecastData?.current?.is_day ? "true" : "false"}</div>
-                </div>
-                <div className="flex justify-between gap-4 mt-4">
-                  <div className="font-bold">Time</div>
-                  <div>{forecastData?.current?.time}</div>
-                </div>
-                <div className="flex justify-between gap-4 mt-4">
-                  <div className="font-bold">Temperature 2m</div>
-                  <div>
-                    {forecastData?.current?.temperature_2m}{" "}
-                    {forecastData?.current_units?.temperature_2m}
+                  <div className="flex justify-between gap-4 mt-4">
+                    <div className="font-bold">Is Day</div>
+                    <div>
+                      {forecastData?.current?.is_day ? "true" : "false"}
+                    </div>
                   </div>
-                </div>
-                <div className="flex justify-between gap-4 mt-4">
-                  <div className="font-bold">Relative humidity (2m)</div>
-                  <div>
-                    {forecastData?.current?.relative_humidity_2m}{" "}
-                    {forecastData?.current_units?.relative_humidity_2m}
+                  <div className="flex justify-between gap-4 mt-4">
+                    <div className="font-bold">Time</div>
+                    <div>{forecastData?.current?.time}</div>
+                  </div>
+                  <div className="flex justify-between gap-4 mt-4">
+                    <div className="font-bold">Temperature 2m</div>
+                    <div>
+                      {forecastData?.current?.temperature_2m}{" "}
+                      {forecastData?.current_units?.temperature_2m}
+                    </div>
+                  </div>
+                  <div className="flex justify-between gap-4 mt-4">
+                    <div className="font-bold">Relative humidity (2m)</div>
+                    <div>
+                      {forecastData?.current?.relative_humidity_2m}{" "}
+                      {forecastData?.current_units?.relative_humidity_2m}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+              <div className="grid grid-cols-1 my-4 xl:grid-cols-2 xl:gap-4">
+                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800 xl:mb-0">
+                  <h2 className="text-xl">Daily</h2>
+                </div>
+                <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                  <h2 className="text-xl">Hourly</h2>
+                </div>
+              </div>
+            </>
           ) : (
             ""
           )}
