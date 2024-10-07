@@ -1,15 +1,13 @@
 ## GreenHeat Code Challenge
 
 <div align="center">
-  <a href="https://i.imgur.com/hxfStBo.png" target="_blank" title="Code Challenge">
     <img src="https://i.imgur.com/hxfStBo.png"
-      title="Grovbox dark and light themes for Tmux"
+      title="GreenHeat Code Challenge"
       width="100%"
       height="auto"
       style="max-width: 500px; text-align: center; border-radius: 12px; overflow:hidden;"
       referrerpolicy="no-referrer"
     />
-  </a>
 </div>
 
 ## Run project
@@ -22,21 +20,17 @@ Requirements:
 -   node <= 20
 
 ```bash
-# copy .env.example to .env (adjust to the needs)
+# copy .env.example to .env (adjust to the needs; by default work in dev mode)
 cp .env.example .env
 
 # start detached
 docker compose up -d
 ```
 
-## Development
+To start each service separately visit the following pages:
 
-Webapp (frontend):
-
-```bash
-cd webapp
-npm run dev
-```
+-   [server](./server/README.md)
+-   [webapp](./webapp/README.md)
 
 ## License
 
