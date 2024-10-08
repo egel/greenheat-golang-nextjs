@@ -9,6 +9,7 @@ import {
   debounceTime,
   first,
   switchMap,
+  tap,
 } from "rxjs";
 import Link from "next/link";
 import { Optional, Nullable } from "@/lib/interfaces/standard";
@@ -29,7 +30,11 @@ import {
   ChartOptions,
   registerables,
 } from "chart.js";
+import { MdClose, MdSearch } from "react-icons/md";
+import { ImSpinner } from "react-icons/im";
 Chart.register(...registerables); // INFO: important to initialize graphs
+
+import image2 from "../../public/undraw_searching_re_3ra9.svg";
 
 function chartDataReset() {
   return {
@@ -117,7 +122,7 @@ export default function Dashboard() {
   const searchTown$: BehaviorSubject<string> = new BehaviorSubject("");
 
   const [isContentLoading, setIsContentLoading] = useState<boolean>(true);
-  const [isSearchLoading, setIsSearchLoading] = useState<boolean>(true);
+  const [isSearchLoading, setIsSearchLoading] = useState<boolean>(false);
   const [forecastData, setForecastData] =
     useState<Optional<ForecastGetResponse>>(void 0);
   const [geosearchData, setGeosearchData] = useState([]);
@@ -127,6 +132,14 @@ export default function Dashboard() {
   const searchTownChange = (v: any) => {
     setSearchTown(v);
     searchTown$.next(v);
+  };
+
+  const searchTownInputReset = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setSearchTown("");
+    setSearchTownSelected(void 0);
   };
 
   const searchTownListOnClickHander = (
@@ -149,6 +162,7 @@ export default function Dashboard() {
     if (item.admin2) name += `${item.admin2}, `;
     if (item.admin3) name += `${item.admin3}, `;
     if (item.admin4) name += `${item.admin4}, `;
+    if (item.country) name += `${item.country}, `;
     return name.substring(0, name.length - 2);
   };
 
@@ -182,22 +196,30 @@ export default function Dashboard() {
 
   // find desired geolocation
   useEffect(() => {
-    if (searchTown.length === 0) return;
+    if (searchTown.length === 0) {
+      setIsSearchLoading(false);
+      return;
+    }
     const subscription = combineLatest([searchTown$.pipe(debounceTime(300))])
       .pipe(
+        tap(() => {
+          setIsSearchLoading(true);
+        }),
         switchMap(() => apiService.geosearchGet$(searchTown)),
         first(),
       )
       .subscribe({
         next: (res: any) => {
+          console.log("geosearch", res.results);
           setIsContentLoading(false);
           setGeosearchData(res.results);
           setSearchTownInputFocused(true);
-          console.log(res.results);
+          setIsSearchLoading(false);
         },
         error: (err) => {
           console.error(err);
           setIsContentLoading(false);
+          setIsSearchLoading(false);
         },
       });
     return () => {
@@ -290,17 +312,30 @@ export default function Dashboard() {
               >
                 Search for desired place
               </label>
-              <input
-                ref={searchTownInput}
-                onFocus={onFocus}
-                onBlur={onBlur}
-                className="shadow appearance-none border dark:border-stone-700 hover:border-stone-500 rounded w-full py-2 px-3 text-zinc-700 dark:text-zinc-100 bg-white dark:bg-neutral-800 leading-tight focus:outline-none focus:shadow-outline"
-                id="geosearch"
-                type="text"
-                placeholder="e.g.: New York"
-                value={searchTown}
-                onChange={(event) => searchTownChange(event.target.value)}
-              />
+              <div className="relative">
+                <MdSearch className="absolute size-6 top-2 left-2" />
+                <input
+                  ref={searchTownInput}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                  className="pl-10 shadow appearance-none border dark:border-stone-700 hover:border-stone-500 rounded w-full py-2 px-3 text-zinc-700 dark:text-zinc-100 bg-white dark:bg-neutral-800 leading-tight focus:outline-none focus:shadow-outline"
+                  id="geosearch"
+                  type="text"
+                  placeholder="e.g.: New York"
+                  value={searchTown}
+                  onChange={(event) => searchTownChange(event.target.value)}
+                />
+                <div className="absolute top-2 right-2 flex flex-row align-center">
+                  {isSearchLoading ? (
+                    <ImSpinner className="animate-spin size-5" />
+                  ) : (
+                    ""
+                  )}
+                  <button onClick={searchTownInputReset}>
+                    <MdClose className="size-6" />
+                  </button>
+                </div>
+              </div>
               {geosearchData &&
               geosearchData.length > 0 &&
               (searchTownInputFocused || isListHovered) ? (
@@ -314,7 +349,7 @@ export default function Dashboard() {
                   onMouseLeave={() => setIsListHovered(false)}
                 >
                   <div
-                    className="my-2 w-65 flex flex-col max-w-96 max-h-64 min-h-32"
+                    className="my-2 w-65 flex flex-col max-w-140 max-h-64 min-h-10"
                     role="none"
                   >
                     {searchTownListRender(geosearchData)}
@@ -326,10 +361,12 @@ export default function Dashboard() {
             </div>
           </form>
           {!isContentLoading && searchTownSelected ? (
-            <>
-              <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
-                <div className="p-4 bg-white border border-zinc-200 rounded-lg shadow-sm sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                  <h2 className="text-xl">Geo Search details</h2>
+            <div className="ease-in-out duration-300">
+              <div className="grid gap-4 my-4 xl:grid-cols-2 2xl:grid-cols-3">
+                <div className="p-4 bg-white border border-zinc-200 rounded-lg 2xl:col-span-2 shadow-sm sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
+                  <h2 className="mb-4 text-2xl text-purple-600">
+                    Geo Search details
+                  </h2>
                   <div className="flex justify-between gap-4 mt-4">
                     <div className="font-bold">Name</div>
                     <div>{displayFullSearchTownName(searchTownSelected)}</div>
@@ -349,11 +386,12 @@ export default function Dashboard() {
                     <div className="font-bold">Time Zone</div>
                     <div>{searchTownSelected?.timezone}</div>
                   </div>
-                  {/* <div>{JSON.stringify(searchTownSelected)}</div>*/}
                 </div>
-                <div className="p-4 bg-white border border-zinc-200 rounded-lg shadow-sm 2xl:col-span-2 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                  <h2 className="text-xl">Current</h2>
 
+                <div className="p-4 bg-white border border-zinc-200 rounded-lg shadow-sm 2xl:col-span-1 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
+                  <h2 className="mb-4 text-2xl text-purple-600">
+                    Current data
+                  </h2>
                   <div className="flex justify-between gap-4 mt-4">
                     <div className="font-bold">Is Day</div>
                     <div>
@@ -382,7 +420,7 @@ export default function Dashboard() {
               </div>
               <div className="grid grid-cols-1 my-4 xl:grid-cols-2 xl:gap-4">
                 <div className="p-4 mb-4 bg-white border border-zinc-200 rounded-lg shadow-sm sm:p-6 xl:mb-0 dark:border-zinc-800 dark:bg-zinc-900">
-                  <h2 className="text-xl">Daily</h2>
+                  <h2 className="mb-4 text-2xl text-purple-600">Daily info</h2>
                   <canvas
                     ref={canvasDailyGraphRef}
                     role="img"
@@ -391,7 +429,7 @@ export default function Dashboard() {
                   ></canvas>
                 </div>
                 <div className="p-4 bg-white border border-zinc-200 rounded-lg shadow-sm sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                  <h2 className="text-xl">Hourly</h2>
+                  <h2 className="mb-4 text-2xl text-purple-600">Hourly info</h2>
                   <canvas
                     ref={canvasHourlyGraphRef}
                     role="img"
@@ -400,9 +438,22 @@ export default function Dashboard() {
                   ></canvas>
                 </div>
               </div>
-            </>
+            </div>
           ) : (
-            ""
+            <div className="mt-20 flex flex-row justify-center content-center">
+              <Image
+                alt=""
+                src="/undraw_searching_re_3ra9_v1.svg"
+                height="200"
+                width="200"
+              />
+              <div className="flex flex-col justify-center ">
+                <h1 className="mb-2 text-3xl text-purple-600 dark:text-purple-500">
+                  Pick your place
+                </h1>
+                <p>Search for desired place to find meteo information.</p>
+              </div>
+            </div>
           )}
         </div>
       </main>
