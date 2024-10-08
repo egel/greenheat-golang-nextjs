@@ -34,8 +34,6 @@ import { MdClose, MdSearch } from "react-icons/md";
 import { ImSpinner } from "react-icons/im";
 Chart.register(...registerables); // INFO: important to initialize graphs
 
-import image2 from "../../public/undraw_searching_re_3ra9.svg";
-
 function chartDataReset() {
   return {
     labels: [],
@@ -74,9 +72,11 @@ export default function Dashboard() {
 
   const [chartHourlyData, setChartHourlyData] =
     useState<ChartData<"line">>(chartDataReset());
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [chartHourlyOptions, setChartHourlyOptions] = useState<ChartOptions>();
   const [chartDailyData, setChartDailyData] =
     useState<ChartData<"line">>(chartDataReset());
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [chartDailyOptions, setChartDailyOptions] = useState<ChartOptions>();
 
   const renderHourlyChart = () => {
@@ -125,11 +125,11 @@ export default function Dashboard() {
   const [isSearchLoading, setIsSearchLoading] = useState<boolean>(false);
   const [forecastData, setForecastData] =
     useState<Optional<ForecastGetResponse>>(void 0);
-  const [geosearchData, setGeosearchData] = useState([]);
+  const [geosearchData, setGeosearchData] = useState<Array<GeoSearchItem>>([]);
   const [searchTown, setSearchTown] = useState("");
   const [searchTownSelected, setSearchTownSelected] =
     useState<Optional<GeoSearchItem>>(void 0);
-  const searchTownChange = (v: any) => {
+  const searchTownChange = (v: string) => {
     setSearchTown(v);
     searchTown$.next(v);
   };
@@ -209,7 +209,7 @@ export default function Dashboard() {
         first(),
       )
       .subscribe({
-        next: (res: any) => {
+        next: (res) => {
           console.log("geosearch", res.results);
           setIsContentLoading(false);
           setGeosearchData(res.results);
@@ -225,10 +225,10 @@ export default function Dashboard() {
     return () => {
       if (subscription) subscription.unsubscribe();
     };
-  }, [searchTown]);
+  }, [searchTown, apiService]);
 
   const generateChartLineHourlyData = (forecast: ForecastGetResponse) => {
-    let res: ChartData<"line"> = chartDataReset();
+    const res: ChartData<"line"> = chartDataReset();
     res.labels = forecast.hourly?.time;
 
     const hourlyGraphs = Object.values(HourlyGeoOption);
@@ -244,7 +244,7 @@ export default function Dashboard() {
   };
 
   const generateChartLineDailyData = (forecast: ForecastGetResponse) => {
-    let res: ChartData<"line"> = chartDataReset() as never;
+    const res: ChartData<"line"> = chartDataReset() as never;
     res.labels = forecast.daily?.time;
 
     const dailyGraphs = Object.values(DailyGeoOption);
@@ -273,7 +273,7 @@ export default function Dashboard() {
       .forecastGet$(params)
       .pipe(debounceTime(300), first())
       .subscribe({
-        next: (res: any) => {
+        next: (res) => {
           console.log(res);
           setForecastData(res);
           setChartDailyData(generateChartLineDailyData(res));
@@ -286,7 +286,7 @@ export default function Dashboard() {
     return () => {
       if (subscription) subscription.unsubscribe();
     };
-  }, [searchTownSelected]);
+  }, [searchTownSelected, apiService]);
 
   return (
     <div className="overflow-hidden flex flex-col h-full">

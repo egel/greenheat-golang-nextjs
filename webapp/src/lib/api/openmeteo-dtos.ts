@@ -48,6 +48,11 @@ export interface GeoSearchItem {
   timezone: string;
 }
 
+export interface GeoSearchResponse {
+  generationtime_ms: number;
+  results: Array<GeoSearchItem>;
+}
+
 export interface ForecastGetQueryParams {
   latitude: number;
   longitude: number;

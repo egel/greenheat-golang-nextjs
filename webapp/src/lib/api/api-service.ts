@@ -1,7 +1,10 @@
-import { Observable, switchMap, catchError, throwError, of } from "rxjs";
+import { Observable, switchMap, catchError, throwError } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
-import { ForecastGetQueryParams, GeoSearchItem } from "./openmeteo-dtos";
-import { Optional } from "../interfaces/standard";
+import {
+  ForecastGetQueryParams,
+  ForecastGetResponse,
+  GeoSearchResponse,
+} from "./openmeteo-dtos";
 
 type SuccessCallback = () => void;
 type ErrorCallback = () => void;
@@ -46,7 +49,7 @@ export class ApiService implements IApiService {
     referrerPolicy: "no-referrer",
   };
 
-  public geosearchGet$(name: string = ""): Observable<any> {
+  public geosearchGet$(name: string = ""): Observable<GeoSearchResponse> {
     const extendInit: RequestInit = {
       ...ApiService.DefaultFromFetchInit,
       method: "GET",
@@ -74,7 +77,9 @@ export class ApiService implements IApiService {
     );
   }
 
-  public forecastGet$(searchQuery: ForecastGetQueryParams): Observable<any> {
+  public forecastGet$(
+    searchQuery: ForecastGetQueryParams,
+  ): Observable<ForecastGetResponse> {
     const extendInit: RequestInit = {
       ...ApiService.DefaultFromFetchInit,
       method: "GET",
