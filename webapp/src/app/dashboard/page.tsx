@@ -53,6 +53,7 @@ export default function Dashboard() {
 
   const destroyHourlyChart = () => {
     if (chartHourlyRef.current) {
+      chartHourlyRef.current.clear();
       chartHourlyRef.current.destroy();
       chartHourlyRef.current = null;
     }
@@ -60,6 +61,7 @@ export default function Dashboard() {
 
   const destroyDailyChart = () => {
     if (chartDailyRef.current) {
+      chartDailyRef.current.clear();
       chartDailyRef.current.destroy();
       chartDailyRef.current = null;
     }
@@ -77,7 +79,7 @@ export default function Dashboard() {
       return;
     }
 
-    chartDailyRef.current = new Chart(canvasHourlyGraphRef.current, {
+    chartHourlyRef.current = new Chart(canvasHourlyGraphRef.current, {
       type: "line",
       data: chartHourlyData,
       options: chartHourlyOptions,
@@ -105,7 +107,6 @@ export default function Dashboard() {
 
   // rerender when data changes
   useEffect(() => {
-    console.log("DATA CHANGES");
     renderDailyChart();
 
     return () => destroyDailyChart();
@@ -155,12 +156,17 @@ export default function Dashboard() {
     return item?.population ? item.population : "-";
   };
 
+  const displayDayOrNight = (isDay: Optional<boolean | number | string>) => {
+    if (isDay === undefined) return "-";
+    return isDay == "true" || isDay == "1" || isDay === 1 ? "day" : "night";
+  };
+
   // rendering list of geolocations
   const searchTownListRender = (list: Array<GeoSearchItem>) => {
     const result = list.map((item) => {
       return (
         <a
-          className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100 min-w-full cursor-pointer"
+          className="block px-4 py-2 text-sm text-zinc-700 dark:text-zinc-100 hover:bg-purple-100 dark:hover:bg-purple-800 min-w-full cursor-pointer"
           role="menuitem"
           tabIndex={-1}
           id={`geosearch-${item.id}`}
@@ -262,22 +268,24 @@ export default function Dashboard() {
 
   return (
     <div className="overflow-hidden flex flex-col h-full">
-      <nav className="px-4 pb-5 pt-7 border-gray-200 dark:bg-indigo-800 dark:border-indigo-700">
+      <nav className="px-4 pb-5 pt-7 border-zinc-200 bg-purple-500 dark:bg-purple-900 dark:border-purple-200">
         <div className="mx-auto flex items-center justify-between px-2 sm:px-4 lg:max-w-7xl">
           <div className="flex items-center justify-start">
-            <h1 className="text-2xl">GreenHeat</h1>
+            <h1 className="text-2xl text-zinc-50 dark:text-zinc-80">
+              GreenHeat
+            </h1>
           </div>
-          <div className="flex items-center gap-4 sm:gap-8">
+          <div className="flex items-center gap-4 sm:gap-8 text-zinc-100">
             <Link href={APP_ROUTES.DASHBOARD}>Dashboard</Link>
           </div>
         </div>
       </nav>
       <main className="px-4 mt-4 flex-1 overflow-y-auto">
         <div className="relative mx-auto lg:max-w-7xl">
-          <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <div className="relative mb-4">
+          <form className="bg-white dark:border-zinc-700 dark:bg-zinc-900 border dark:border-stone-800 shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <div className="relative mb-1">
               <label
-                className="block text-gray-700 text-sm font-bold mb-2"
+                className="block text-zinc-700 dark:text-zinc-100 text-sm font-bold mb-2"
                 htmlFor="geosearch"
               >
                 Search for desired place
@@ -286,7 +294,7 @@ export default function Dashboard() {
                 ref={searchTownInput}
                 onFocus={onFocus}
                 onBlur={onBlur}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border dark:border-stone-700 hover:border-stone-500 rounded w-full py-2 px-3 text-zinc-700 dark:text-zinc-100 bg-white dark:bg-neutral-800 leading-tight focus:outline-none focus:shadow-outline"
                 id="geosearch"
                 type="text"
                 placeholder="e.g.: New York"
@@ -297,7 +305,7 @@ export default function Dashboard() {
               geosearchData.length > 0 &&
               (searchTownInputFocused || isListHovered) ? (
                 <div
-                  className="absolute left-0 z-10 mt-2 flex overflow-y-auto origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  className="absolute left-0 z-10 mt-2 flex overflow-y-auto origin-top-right rounded-md bg-white dark:bg-zinc-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                   role="menu"
                   aria-orientation="vertical"
                   aria-labelledby="menu-button"
@@ -320,7 +328,7 @@ export default function Dashboard() {
           {!isContentLoading && searchTownSelected ? (
             <>
               <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
-                <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                <div className="p-4 bg-white border border-zinc-200 rounded-lg shadow-sm sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
                   <h2 className="text-xl">Geo Search details</h2>
                   <div className="flex justify-between gap-4 mt-4">
                     <div className="font-bold">Name</div>
@@ -343,13 +351,13 @@ export default function Dashboard() {
                   </div>
                   {/* <div>{JSON.stringify(searchTownSelected)}</div>*/}
                 </div>
-                <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                <div className="p-4 bg-white border border-zinc-200 rounded-lg shadow-sm 2xl:col-span-2 sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
                   <h2 className="text-xl">Current</h2>
 
                   <div className="flex justify-between gap-4 mt-4">
                     <div className="font-bold">Is Day</div>
                     <div>
-                      {forecastData?.current?.is_day ? "true" : "false"}
+                      {displayDayOrNight(forecastData?.current?.is_day)}
                     </div>
                   </div>
                   <div className="flex justify-between gap-4 mt-4">
@@ -373,7 +381,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="grid grid-cols-1 my-4 xl:grid-cols-2 xl:gap-4">
-                <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800 xl:mb-0">
+                <div className="p-4 mb-4 bg-white border border-zinc-200 rounded-lg shadow-sm sm:p-6 xl:mb-0 dark:border-zinc-800 dark:bg-zinc-900">
                   <h2 className="text-xl">Daily</h2>
                   <canvas
                     ref={canvasDailyGraphRef}
@@ -382,7 +390,7 @@ export default function Dashboard() {
                     width={500}
                   ></canvas>
                 </div>
-                <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                <div className="p-4 bg-white border border-zinc-200 rounded-lg shadow-sm sm:p-6 dark:border-zinc-800 dark:bg-zinc-900">
                   <h2 className="text-xl">Hourly</h2>
                   <canvas
                     ref={canvasHourlyGraphRef}

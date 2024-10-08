@@ -5,6 +5,7 @@ export const CurrentGeoOption = {
   relative_humidity_2m: "relative_humidity_2m",
   wind_speed_10m: "wind_speed_10m",
   wind_direction_10m: "wind_direction_10m",
+  is_day: "is_day",
 } as const;
 export type CurrentGeoOption =
   (typeof CurrentGeoOption)[keyof typeof CurrentGeoOption];
