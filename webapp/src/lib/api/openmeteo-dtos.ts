@@ -1,3 +1,30 @@
+// INFO manually typed
+
+export const CurrentGeoOption = {
+  temperature_2m: "temperature_2m",
+  relative_humidity_2m: "relative_humidity_2m",
+  wind_speed_10m: "wind_speed_10m",
+  wind_direction_10m: "wind_direction_10m",
+} as const;
+export type CurrentGeoOption =
+  (typeof CurrentGeoOption)[keyof typeof CurrentGeoOption];
+
+export const DailyGeoOption = {
+  ApparentTemperatureMax: "apparent_temperature_max",
+  ApparentTemperatureMin: "apparent_temperature_min",
+  Temperature2mMax: "temperature_2m_max",
+  Temperature2mMin: "temperature_2m_min",
+} as const;
+export type DailyGeoOption =
+  (typeof DailyGeoOption)[keyof typeof DailyGeoOption];
+
+export const HourlyGeoOption = {
+  Temperature2m: "temperature_2m",
+  RelativeHumidity2m: "relative_humidity_2m",
+} as const;
+export type HourlyGeoOption =
+  (typeof HourlyGeoOption)[keyof typeof HourlyGeoOption];
+
 export interface GeoSearchItem {
   admin1: string;
   admin1_id: number;
@@ -48,25 +75,28 @@ export interface ForecastGetCurrent {
 }
 
 export interface ForecastGetDailyUnits {
-  temperature_2m_max?: string;
-  temperature_2m_min?: string;
-  relative_humidity_2m?: number;
-  time?: string;
-  wind_direction_10m?: string;
-  wind_speed_10m?: string;
+  [key: string]: number | string;
 }
 
 export interface ForecastGetDaily {
-  temperature_2m_max?: Array<number>;
-  temperature_2m_min?: Array<number>;
-  time?: Array<string>;
+  [key: string]: Array<number | string>;
+}
+
+export interface ForecastGetHourlyUnits {
+  [key: string]: number | string;
+}
+
+export interface ForecastGetHourly {
+  [key: string]: Array<number | string>;
 }
 
 export interface ForecastGetResponse {
   current?: ForecastGetCurrent;
   current_units?: ForecastGetCurrentUnits;
-  dailyi?: ForecastGetDaily;
+  daily?: ForecastGetDaily;
   daily_units?: ForecastGetDailyUnits;
+  hourly?: ForecastGetHourly;
+  hourly_units?: ForecastGetHourlyUnits;
   elevation?: number;
   generationtime_ms?: number;
   latitude: number;

@@ -15,12 +15,28 @@ import { Optional, Nullable } from "@/lib/interfaces/standard";
 import { ApiService } from "@/lib/api/api-service";
 import { APP_ROUTES } from "@/constans/appRouter";
 import {
+  CurrentGeoOption,
+  DailyGeoOption,
   ForecastGetQueryParams,
   ForecastGetResponse,
   GeoSearchItem,
+  HourlyGeoOption,
 } from "@/lib/api/openmeteo-dtos";
-import { Chart, registerables } from "chart.js";
-Chart.register(...registerables);
+import {
+  Chart,
+  ChartData,
+  ChartDataset,
+  ChartOptions,
+  registerables,
+} from "chart.js";
+Chart.register(...registerables); // INFO: important to initialize graphs
+
+function chartDataReset() {
+  return {
+    labels: [],
+    datasets: [],
+  };
+}
 
 export default function Dashboard() {
   const apiService = useMemo(() => new ApiService(), []);
@@ -30,81 +46,77 @@ export default function Dashboard() {
   const onFocus = () => setSearchTownInputFocused(true);
   const onBlur = () => setSearchTownInputFocused(false);
 
+  const canvasHourlyGraphRef = useRef<HTMLCanvasElement>(null);
+  const chartHourlyRef = useRef<Nullable<Chart>>();
   const canvasDailyGraphRef = useRef<HTMLCanvasElement>(null);
   const chartDailyRef = useRef<Nullable<Chart>>();
 
-  const destroyChart = () => {
+  const destroyHourlyChart = () => {
+    if (chartHourlyRef.current) {
+      chartHourlyRef.current.destroy();
+      chartHourlyRef.current = null;
+    }
+  };
+
+  const destroyDailyChart = () => {
     if (chartDailyRef.current) {
       chartDailyRef.current.destroy();
       chartDailyRef.current = null;
     }
   };
 
-  const fallbackContent = "Default fallback content";
-  const [chartDailyData, setChartDailyData] = useState({
-    labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
-    datasets: [
-      {
-        label: "# of Votes",
-        data: [12, 19, 3, 5, 2, 3],
-        borderWidth: 1,
-      },
-    ],
-  });
-  const [chartDailyOptions, setChartDailyOptions] = useState({
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-  });
+  const [chartHourlyData, setChartHourlyData] =
+    useState<ChartData<"line">>(chartDataReset());
+  const [chartHourlyOptions, setChartHourlyOptions] = useState<ChartOptions>();
+  const [chartDailyData, setChartDailyData] =
+    useState<ChartData<"line">>(chartDataReset());
+  const [chartDailyOptions, setChartDailyOptions] = useState<ChartOptions>();
 
-  const renderChart = () => {
-    if (!canvasDailyGraphRef.current) return;
+  const renderHourlyChart = () => {
+    if (!canvasHourlyGraphRef.current) {
+      return;
+    }
+
+    chartDailyRef.current = new Chart(canvasHourlyGraphRef.current, {
+      type: "line",
+      data: chartHourlyData,
+      options: chartHourlyOptions,
+    });
+  };
+
+  const renderDailyChart = () => {
+    if (!canvasDailyGraphRef.current) {
+      return;
+    }
 
     chartDailyRef.current = new Chart(canvasDailyGraphRef.current, {
       type: "line",
-      data: {
-        labels: [
-          "January",
-          "February",
-          "March",
-          "April",
-          "May",
-          "June",
-          "July",
-        ],
-        datasets: [
-          {
-            label: "Try hiding me",
-            data: [65, 59, 80, 81, 26, 55, 40],
-            fill: false,
-            borderColor: "rgb(75, 192, 192)",
-          },
-        ],
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-          },
-        },
-      },
+      data: chartDailyData,
+      options: chartDailyOptions,
     });
-    console.log("rendered");
   };
 
+  // rerender when data changes
   useEffect(() => {
-    renderChart();
+    renderHourlyChart();
 
-    return () => destroyChart();
-  });
+    return () => destroyHourlyChart();
+  }, [chartHourlyOptions, chartHourlyData]);
+
+  // rerender when data changes
+  useEffect(() => {
+    console.log("DATA CHANGES");
+    renderDailyChart();
+
+    return () => destroyDailyChart();
+  }, [chartDailyOptions, chartDailyData]);
 
   const [isListHovered, setIsListHovered] = useState(false);
 
   const searchTown$: BehaviorSubject<string> = new BehaviorSubject("");
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isContentLoading, setIsContentLoading] = useState<boolean>(true);
+  const [isSearchLoading, setIsSearchLoading] = useState<boolean>(true);
   const [forecastData, setForecastData] =
     useState<Optional<ForecastGetResponse>>(void 0);
   const [geosearchData, setGeosearchData] = useState([]);
@@ -143,11 +155,12 @@ export default function Dashboard() {
     return item?.population ? item.population : "-";
   };
 
+  // rendering list of geolocations
   const searchTownListRender = (list: Array<GeoSearchItem>) => {
     const result = list.map((item) => {
       return (
         <a
-          className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-300 min-w-full cursor-pointer"
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100 min-w-full cursor-pointer"
           role="menuitem"
           tabIndex={-1}
           id={`geosearch-${item.id}`}
@@ -164,7 +177,6 @@ export default function Dashboard() {
   // find desired geolocation
   useEffect(() => {
     if (searchTown.length === 0) return;
-    setIsLoading(true);
     const subscription = combineLatest([searchTown$.pipe(debounceTime(300))])
       .pipe(
         switchMap(() => apiService.geosearchGet$(searchTown)),
@@ -172,14 +184,14 @@ export default function Dashboard() {
       )
       .subscribe({
         next: (res: any) => {
-          setIsLoading(false);
+          setIsContentLoading(false);
           setGeosearchData(res.results);
           setSearchTownInputFocused(true);
           console.log(res.results);
         },
         error: (err) => {
           console.error(err);
-          setIsLoading(false);
+          setIsContentLoading(false);
         },
       });
     return () => {
@@ -187,16 +199,47 @@ export default function Dashboard() {
     };
   }, [searchTown]);
 
+  const generateChartLineHourlyData = (forecast: ForecastGetResponse) => {
+    let res: ChartData<"line"> = chartDataReset();
+    res.labels = forecast.hourly?.time;
+
+    const hourlyGraphs = Object.values(HourlyGeoOption);
+    hourlyGraphs.forEach((name) => {
+      res.datasets.push({
+        label: name,
+        data: forecast.hourly?.[name],
+        fill: false,
+      } as ChartDataset<"line">);
+    });
+
+    return res;
+  };
+
+  const generateChartLineDailyData = (forecast: ForecastGetResponse) => {
+    let res: ChartData<"line"> = chartDataReset() as never;
+    res.labels = forecast.daily?.time;
+
+    const dailyGraphs = Object.values(DailyGeoOption);
+    dailyGraphs.forEach((name) => {
+      res.datasets.push({
+        label: name,
+        data: forecast.daily?.[name],
+        fill: false,
+      } as ChartDataset<"line">);
+    });
+
+    return res;
+  };
+
   // get forecast information
   useEffect(() => {
     if (!searchTownSelected) return;
     const params: ForecastGetQueryParams = {
       latitude: searchTownSelected.latitude,
       longitude: searchTownSelected.longitude,
-      current:
-        "temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m",
-      hourly: "temperature_2m,precipitation",
-      daily: "weather_code,temperature_2m_max,temperature_2m_min",
+      current: Object.values(CurrentGeoOption).join(","),
+      hourly: Object.values(HourlyGeoOption).join(","),
+      daily: Object.values(DailyGeoOption).join(","),
     };
     const subscription = apiService
       .forecastGet$(params)
@@ -205,6 +248,8 @@ export default function Dashboard() {
         next: (res: any) => {
           console.log(res);
           setForecastData(res);
+          setChartDailyData(generateChartLineDailyData(res));
+          setChartHourlyData(generateChartLineHourlyData(res));
         },
         error: (err) => {
           console.error(err);
@@ -227,7 +272,7 @@ export default function Dashboard() {
           </div>
         </div>
       </nav>
-      <main className="px-4 mt-4 flex-1">
+      <main className="px-4 mt-4 flex-1 overflow-y-auto">
         <div className="relative mx-auto lg:max-w-7xl">
           <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
             <div className="relative mb-4">
@@ -272,7 +317,7 @@ export default function Dashboard() {
               )}
             </div>
           </form>
-          {!isLoading && searchTownSelected ? (
+          {!isContentLoading && searchTownSelected ? (
             <>
               <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
                 <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
@@ -339,7 +384,12 @@ export default function Dashboard() {
                 </div>
                 <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                   <h2 className="text-xl">Hourly</h2>
-                  <canvas id="hourly-graph"></canvas>
+                  <canvas
+                    ref={canvasHourlyGraphRef}
+                    role="img"
+                    height={300}
+                    width={500}
+                  ></canvas>
                 </div>
               </div>
             </>
