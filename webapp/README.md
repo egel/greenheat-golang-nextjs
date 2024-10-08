@@ -13,6 +13,13 @@
 To run webapp individually for local development
 
 ```bash
+# install dependencies
+npm i
+
+# copy config env vars for local development and adjust to the needs
+cp .env.local.example .env.development
+
+# start project
 npm run dev
 ```
 

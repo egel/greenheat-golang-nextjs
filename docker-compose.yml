@@ -10,7 +10,7 @@ services:
     # image: registry.example.com/greenheat/server:${RELEASE_VERSION}
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8000:8000"
+      - "8000:8000"
     networks:
       greenheat:
     environment:
@@ -30,9 +30,12 @@ services:
     # image: registry.example.com/greenheat/webapp:${RELEASE_VERSION}
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3000:3000"
+      - "3000:3000"
     networks:
       greenheat:
+    environment:
+      - PROXY_SERVER_HOST=${SERVER_HOST}
+      - PROXY_SERVER_PORT=${SERVER_PORT}
 networks:
   greenheat:
     name: greenheat_network
