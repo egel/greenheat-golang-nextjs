@@ -1,14 +1,6 @@
 ## GreenHeat Code Challenge
 
-<div align="center">
-    <img src="https://i.imgur.com/hxfStBo.png"
-      title="GreenHeat Code Challenge"
-      width="100%"
-      height="auto"
-      style="max-width: 500px; text-align: center; border-radius: 12px; overflow:hidden;"
-      referrerpolicy="no-referrer"
-    />
-</div>
+<!-- https://i.imgur.com/hxfStBo.png -->
 
 ## Run project
 
